@@ -1,9 +1,39 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:gridview/add_field.dart';
+import 'package:provider/provider.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(ChangeNotifierProvider(
+    create: (context) => GlobalList(),
+    child: const MyApp(),
+  ));
+}
+
+class GlobalList extends ChangeNotifier {
+  Map<String, List<String>> lists = {
+    "Career": [],
+    "Academic": [],
+    "Love": [],
+  };
+
+  void addToField(aString) {
+    lists[aString] = [];
+    notifyListeners();
+  }
+
+  String fixWord(String aWord) {
+    String y = aWord.toLowerCase();
+    String z = y.substring(1);
+    String x = aWord[0].toUpperCase();
+    print(x + z);
+    notifyListeners();
+    return x + z;
+  }
+
+  @override
+  notifyListeners();
 }
 
 class MyApp extends StatelessWidget {
@@ -43,11 +73,11 @@ class _MyHomePageState extends State<MyHomePage> {
   late final TextEditingController addFieldController;
   late final TextEditingController textController;
   bool isError = false;
-  final Map<String, List<String>> lists = {
-    "Career": [],
-    "Academic": [],
-    "Love": [],
-  };
+  // final Map<String, List<String>> lists = {
+  //   "Career": [],
+  //   "Academic": [],
+  //   "Love": [],
+  // };
 
   String fixWord(String aWord) {
     String y = aWord.toLowerCase();
@@ -73,44 +103,50 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    var globalLists = context.watch<GlobalList>().lists;
     print("isError $isError");
     return Scaffold(
       appBar: AppBar(
         leading: ElevatedButton(
-            child: Icon(Icons.accessibility),
             onPressed: (() {
               showModalBottomSheet(
                   context: context,
                   builder: (context) {
-                    return Container(
-                      height: 200,
-                      color: const Color.fromARGB(255, 213, 51, 173),
-                      child: Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          mainAxisSize: MainAxisSize.min,
-                          children: <Widget>[
-                            TextField(
-                              controller: addFieldController,
-                            ),
-                            ElevatedButton(
-                              child: const Text('add a field'),
-                              onPressed: () {
-                                setState(() {
-                                  final theWord =
-                                      fixWord(addFieldController.text);
-                                  lists[theWord] = [];
-                                });
-                                print(addFieldController.text);
-                                Navigator.pop(context);
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
+                    return AddField(
+                      addFieldController: addFieldController,
                     );
+
+                    //
+                    //     Container(
+                    //   height: 200,
+                    //   color: const Color.fromARGB(255, 213, 51, 173),
+                    //   child: Center(
+                    //     child: Column(
+                    //       mainAxisAlignment: MainAxisAlignment.center,
+                    //       mainAxisSize: MainAxisSize.min,
+                    //       children: <Widget>[
+                    //         TextField(
+                    //           controller: addFieldController,
+                    //         ),
+                    //         ElevatedButton(
+                    //           child: const Text('add a field'),
+                    //           onPressed: () {
+                    //             setState(() {
+                    //               final theWord =
+                    //                   fixWord(addFieldController.text);
+                    //               lists[theWord] = [];
+                    //             });
+                    //             print(addFieldController.text);
+                    //             Navigator.pop(context);
+                    //           },
+                    //         ),
+                    //       ],
+                    //     ),
+                    //   ),
+                    // );
                   });
-            })),
+            }),
+            child: const Icon(Icons.mode_edit)),
         title: Text(widget.title),
       ),
       body: Center(
@@ -122,7 +158,7 @@ class _MyHomePageState extends State<MyHomePage> {
             dropdownColor: Colors.pink,
             borderRadius: BorderRadius.circular(16.0),
             items: [
-              for (var n in lists.keys.toList())
+              for (var n in globalLists.keys.toList())
                 DropdownMenuItem(
                   value: n,
                   child: Text(n),
@@ -138,7 +174,7 @@ class _MyHomePageState extends State<MyHomePage> {
               // ),
             ],
             value: valueSelectedFromDropdown == ""
-                ? lists[lists.length - 1]
+                ? globalLists[globalLists.length - 1]
                 : valueSelectedFromDropdown,
             onChanged: selectItem,
           ),
@@ -168,7 +204,7 @@ class _MyHomePageState extends State<MyHomePage> {
               children: [
                 /*  for (var n in lists[valueSelectedFromDropdown]!) */
                 Text("THE FIELD IS: ${valueSelectedFromDropdown}"),
-                for (var n in lists[valueSelectedFromDropdown]!) Text(n)
+                for (var n in globalLists[valueSelectedFromDropdown]!) Text(n)
               ],
             ),
           ),
@@ -184,14 +220,14 @@ class _MyHomePageState extends State<MyHomePage> {
             return;
           } else {
             setState(() {
-              lists[valueSelectedFromDropdown]?.add(textController.text);
+              globalLists[valueSelectedFromDropdown]?.add(textController.text);
               isError = false;
             });
           }
 
           textController.text = "";
-          print("the selected list ${lists[valueSelectedFromDropdown]}");
-          print(" LISTS[CAREER] ${lists["Career"]}");
+          //  print("the selected list ${lists[valueSelectedFromDropdown]}");
+          //  print(" LISTS[CAREER] ${lists["Career"]}");
         },
       ),
 
